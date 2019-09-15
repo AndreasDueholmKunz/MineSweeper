@@ -35,6 +35,8 @@ class MineSweeperGame {
     private boolean currentlyMassRevealing = false;
     private boolean isCheating = false;
 
+    // If you're reading this, I just want to apoligize.
+
     private int lowestProbabilityX;
     private int lowestProbabilityY;
 
