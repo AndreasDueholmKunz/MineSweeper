@@ -43,29 +43,24 @@ public class gameController {
         System.out.println(Controller.instance.sliderBombs.getValue());
 
         // This is for activating cheats
-        Platform.runLater(() -> {
-            superPane.setOnKeyTyped(event -> {
-                String lower = event.getCharacter().toLowerCase();
-                if (lower.equals("j") && cheatState == 0) cheatState++;
-                else if (lower.equals("a") && cheatState == 1) cheatState++;
-                else if (lower.equals("i") && cheatState == 2) cheatState++;
-                else if (lower.equals("b") && cheatState == 3) cheatState++;
-                else if (lower.equals("e") && cheatState == 4) cheatState++;
-                else if (lower.equals("l") && cheatState ==5 ) {
-                    cheatState = 0;
-                    System.out.println("Changed cheat state");
-                    if (theGame.isCheating()) theGame.stopCheat();
-                    else                      theGame.startCheat();
-                    System.out.println("cheating? " + theGame.isCheating());
-                } else cheatState = 0;
-                System.out.println("cheatState = " + cheatState);
-            });
-        });
+        Platform.runLater(() -> superPane.setOnKeyTyped(event -> {
+            String lower = event.getCharacter().toLowerCase();
+            if (lower.equals("j") && cheatState == 0) cheatState++;
+            else if (lower.equals("a") && cheatState == 1) cheatState++;
+            else if (lower.equals("i") && cheatState == 2) cheatState++;
+            else if (lower.equals("b") && cheatState == 3) cheatState++;
+            else if (lower.equals("e") && cheatState == 4) cheatState++;
+            else if (lower.equals("l") && cheatState ==5 ) {
+                cheatState = 0;
+                System.out.println("Changed cheat state");
+                if (theGame.isCheating()) theGame.stopCheat();
+                else                      theGame.startCheat();
+                System.out.println("cheating? " + theGame.isCheating());
+            } else cheatState = 0;
+            System.out.println("cheatState = " + cheatState);
+        }));
 
         newGame();
-
-
-
 
         ImageView flagIV = new ImageView(new Image(getClass().getResource("flagGrey.png").toExternalForm()));
         flagAmount = new Label("20 / 21");
@@ -109,7 +104,6 @@ public class gameController {
             }
         }
 
-
         flagLabelUpdater = () -> flagAmount.setText(theGame.getCellsFlagged()+ " / " + theGame.getBombAmount());
     }
 
@@ -119,13 +113,12 @@ public class gameController {
             time = 0;
             if (theGame != null) {
                 theGame.stopCheat();
+                theGame.stopExplosion();
             }
 
-            new Thread(() -> {
+            Thread timerThread = new Thread(() -> {
                 int myGameState = gameState;
                 while (myGameState == gameState) {
-                    System.out.println("myGameState = " + myGameState);
-                    System.out.println("gameState = " + gameState);
                     int minutes = time / 60;
                     int seconds = time % 60;
                     String s = (seconds <= 9 ? "0" : "") + seconds;
@@ -134,7 +127,6 @@ public class gameController {
 
                     if (!window.isIconified()) {
                         ++time;
-                        System.out.println("gametime = " + time);
                     }
                     try {
                         Thread.sleep(1000);
@@ -142,7 +134,11 @@ public class gameController {
                         e.printStackTrace();
                     }
                 }
-            }).start();
+            });
+            timerThread.setName("TimeCounterThread");
+            timerThread.setPriority(6);
+            timerThread.setDaemon(true);
+            timerThread.start();
 
             theGame = new MineSweeperGame(gamePane,
 

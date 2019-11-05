@@ -35,8 +35,6 @@ class MineSweeperGame {
     private boolean currentlyMassRevealing = false;
     private boolean isCheating = false;
 
-    // If you're reading this, I just want to apoligize.
-
     private int lowestProbabilityX;
     private int lowestProbabilityY;
 
@@ -134,6 +132,16 @@ class MineSweeperGame {
         this(gamePane, cellsHorizontal, cellsVertical, (int) Math.round(cellsHorizontal * cellsVertical * bombRatio));
     }
 
+    private boolean shake = true;
+    public void stopExplosion() {
+        this.shake = false;
+    }
+
+    private double randomDouble(double min, double max) {
+        return min + Math.random() * (max - min);
+    }
+
+
     private void lost(Cell explodedBomb) {
         PerspectiveCamera camera = new PerspectiveCamera();
         Main.getPrimaryStage().getScene().setCamera(camera);
@@ -160,16 +168,27 @@ class MineSweeperGame {
                 new Stop(1, Color.rgb(255, 128, 0))
         ));
 
-        new Thread(() -> {
+
+
+        Thread explosionThread = new Thread(() -> {
             for (int i = 0; i < 1000; i++) {
-                if (Math.pow(i,1.3) < 1000) {
-                    camera.setLayoutX(Math.random() * (1000-Math.pow(i,1.3))/ size * 7);
-                    camera.setLayoutY(Math.random() * (1000-Math.pow(i,1.3)) / size * 7);
+                if (shake) {
+                    int otherI = 100 - i;
+                    if (otherI >= 0) {
+                        System.out.println(otherI);
+                        camera.setLayoutX(randomDouble(-otherI, otherI) / 100 * size);
+                        camera.setLayoutY(randomDouble(-otherI, otherI) / 100 * size);
+                    } else {
+                        camera.setLayoutX(0);
+                        camera.setLayoutY(0);
+                    }
                 }
-//                if (i == 120) {
-//                    camera.setLayoutX(0);
-//                    camera.setLayoutY(0);
-//                }
+
+                if (!shake) {
+                    camera.setLayoutX(0);
+                    camera.setLayoutY(0);
+                }
+
                 int finalI = i;
                 Platform.runLater(() -> {
                     explosion.setRadiusX(finalI * size / 10);
@@ -185,7 +204,10 @@ class MineSweeperGame {
                 }
             }
 
-        }).start();
+        });
+        explosionThread.setName("Explosion Thread");
+        explosionThread.setDaemon(true);
+        explosionThread.start();
 
         gamePane.getChildren().add(explosion);
 
@@ -285,16 +307,13 @@ class MineSweeperGame {
         System.out.println(revealOrigin);
 
 
-        new Thread(() -> {
+        Thread massRevealer = new Thread(() -> {
             class QueueHolder {
                 private List<Cell> currentQueue = new LinkedList<>();
                 private List<Cell> nextQueue = new LinkedList<>();
             }
 
             QueueHolder q = new QueueHolder();
-
-
-
 
             q.currentQueue.add(revealOrigin);
 
@@ -344,8 +363,10 @@ class MineSweeperGame {
                 currentlyMassRevealing = false;
                 calcCheatPercentages();
             });
-        }).start();
-
+        });
+        massRevealer.setName("Mass Revealer");
+        massRevealer.setDaemon(true);
+        massRevealer.start();
 
     }
 
@@ -438,10 +459,11 @@ class MineSweeperGame {
                     e.printStackTrace();
                 }
             }
-            Platform.runLater(() -> {
-                Platform.runLater(() -> gamePane.getChildren().remove(Jaibel));
-            });
+
+            Platform.runLater(() -> gamePane.getChildren().remove(Jaibel));
         });
+        jaibelCheater.setName("Jaibel Cheater");
+        jaibelCheater.setDaemon(true);
         jaibelCheater.start();
     }
 
@@ -485,7 +507,6 @@ class MineSweeperGame {
 //                    System.out.println("currPercentage = " + currPercentage);
 
                     if (currPercentage == 0 && !gameGrid[x][y].isRevealed) {
-                        lowestPercentage = currPercentage;
                         lowestProbabilityX = x;
                         lowestProbabilityY = y;
                     }
@@ -577,9 +598,7 @@ class MineSweeperGame {
                     graphic.setEffect(new Bloom(0.5));
             });
 
-            graphic.setOnMouseReleased(event -> {
-                graphic.setEffect(null);
-            });
+            graphic.setOnMouseReleased(event -> graphic.setEffect(null));
 
             graphic.setOnMouseClicked(event -> {
                 if (isCheating) {
@@ -606,7 +625,7 @@ class MineSweeperGame {
                     } else if (event.getButton().equals(MouseButton.MIDDLE)) {
 //                        gamePane.getChildren().add(new Line(x*size+size/2,y*size+size/2,selected.x*size+size/2,selected.y*size+size/2));
                         if (selected != null) {
-                            new Thread(() -> {
+                            Thread showSelected = new Thread(() -> {
                                 Line connected = new Line(x*size+size/2,y*size+size/2,selected.x*size+size/2,selected.y*size+size/2);
                                 Platform.runLater(() -> gamePane.getChildren().add(connected));
                                 try {
@@ -615,7 +634,10 @@ class MineSweeperGame {
                                     e.printStackTrace();
                                 }
                                 Platform.runLater(() -> gamePane.getChildren().remove(connected));
-                            }).start();
+                            });
+                            showSelected.setName("SelectedShowerThread");
+                            showSelected.setDaemon(true);
+                            showSelected.start();
                         }
                         System.out.println("x = " + x);
                         System.out.println("y = " + y);
@@ -773,7 +795,7 @@ class MineSweeperGame {
                 whiteEffect.widthProperty().bind(graphic.widthProperty());
                 whiteEffect.heightProperty().bind(graphic.heightProperty());
 
-                new Thread(() -> {
+                Thread fadeEffect = new Thread(() -> {
                     int frames = 10;
                     double bit = 1d / frames;
 
@@ -796,7 +818,10 @@ class MineSweeperGame {
                         graphic.getChildren().remove(whiteEffect);
                         whiteEffect = null;
                     });
-                }).start();
+                });
+                fadeEffect.setName("Fade Effect");
+                fadeEffect.setDaemon(true);
+                fadeEffect.start();
             }
 
         }
