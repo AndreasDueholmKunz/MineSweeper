@@ -1,4 +1,4 @@
-package com.andreasdkunz.jaibelsweeper;
+package com.cybercat3.jaibelsweeper;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;

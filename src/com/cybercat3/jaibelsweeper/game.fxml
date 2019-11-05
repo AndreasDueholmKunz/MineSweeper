@@ -6,7 +6,7 @@
 <?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.andreasdkunz.jaibelsweeper.gameController"
+            fx:controller="com.cybercat3.jaibelsweeper.gameController"
             style="-fx-background-color: rgb(180,180,180)" fx:id="superPane">
     <right>
         <BorderPane>

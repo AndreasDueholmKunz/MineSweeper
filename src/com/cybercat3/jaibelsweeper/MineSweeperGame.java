@@ -1,4 +1,4 @@
-package com.andreasdkunz.jaibelsweeper;
+package com.cybercat3.jaibelsweeper;
 
 
 import javafx.application.Platform;
@@ -175,7 +175,6 @@ class MineSweeperGame {
                 if (shake) {
                     int otherI = 100 - i;
                     if (otherI >= 0) {
-                        System.out.println(otherI);
                         camera.setLayoutX(randomDouble(-otherI, otherI) / 100 * size);
                         camera.setLayoutY(randomDouble(-otherI, otherI) / 100 * size);
                     } else {
